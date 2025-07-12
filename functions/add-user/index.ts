@@ -41,7 +41,8 @@ serve(async (req: Request) => {
   }
 
 
-
-
-  return new Response("User added successfully", { status: 200 });
+  return new Response(JSON.stringify({ message: "User added successfully", success: true }), { 
+    status: 200,
+    headers: { "Content-Type": "application/json" }
+  });
 });
