@@ -3,15 +3,10 @@
 import "https://deno.land/std@0.224.0/dotenv/load.ts";
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.5";
-import type { Database } from "./database.types.ts";
-
-// const supabaseUrl = Deno.env.get('https://uycpfzpkgepvlahagija.supabase.co')!;
-// const supabaseServiceRoleKey = Deno.env.get('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5Y3BmenBrZ2VwdmxhaGFnaWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMyNDk3MzQsImV4cCI6MjA1ODgyNTczNH0.oD26PKieI_WBQvFOwFVbCWY5x4hR9_S5JBBO00KtnVM')!;
-
+import type { Database } from "../_shared/database.types.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
 
 const supabase = createClient<Database>(supabaseUrl, supabaseServiceRoleKey);
 
