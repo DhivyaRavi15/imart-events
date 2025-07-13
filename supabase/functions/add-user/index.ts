@@ -7,7 +7,9 @@ import type { Database } from "../_shared/database.types.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const isLocal = Deno.env.get("IS_LOCAL") === "true";
+// const isLocal = Deno.env.get("IS_LOCAL") === "true";
+const isLocal = false;
+
 
 const supabase = createClient<Database>(supabaseUrl, supabaseServiceRoleKey);
 
@@ -41,13 +43,19 @@ serve(async (req: Request) => {
   try {
     const { id, email, user_metadata } = user;
     
+    // Regex patterns for validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^\d{7,15}$/; // Phone number should be 7-15 digits
+    
     // Validation for required fields
     const validationRules = [
       { value: id, message: "User ID is required" },
       { value: email, message: "Email is required" },
       { value: user_metadata, message: "User metadata is required" },
       { value: user_metadata?.first_name, message: "First name is required" },
-      { value: user_metadata?.last_name, message: "Last name is required" }
+      { value: user_metadata?.last_name, message: "Last name is required" },
+      { value: user_metadata?.phone, message: "Phone number is required" },
+      { value: user_metadata?.date_of_birth, message: "Date of birth is required" }
     ];
 
     for (const rule of validationRules) {
@@ -56,14 +64,47 @@ serve(async (req: Request) => {
       }
     }
     
-    const { first_name, last_name } = user_metadata;
+    // Regex validations
+    if (!emailRegex.test(email)) {
+      throw new Error("Invalid email format");
+    }
+    
+    
+    if (!phoneRegex.test(user_metadata.phone)) {
+      throw new Error("Invalid phone number format. Must contain 7-15 digits only");
+    }
+    
+    // Age validation (18+)
+    const birthDate = new Date(user_metadata.date_of_birth);
+    const today = new Date();
+    
+    if (isNaN(birthDate.getTime())) {
+      throw new Error("Invalid date of birth format");
+    }
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    if (age < 18) {
+      throw new Error("User must be at least 18 years old");
+    }
+    
+    const { first_name, last_name, phone, date_of_birth } = user_metadata;
     const currentTimestamp = new Date().toISOString();
+    
+    // Combine country code and phone number
     
     const userInsert: Database['public']['Tables']['users']['Insert'] = {
       user_auth_id: id,
-      email: email,
-      first_name: first_name,
-      last_name: last_name,
+      email,
+      first_name,
+      last_name,
+      phone,
+      date_of_birth,
       active_status: true,
       created_at: currentTimestamp,
       registration_date: currentTimestamp,
@@ -84,6 +125,7 @@ serve(async (req: Request) => {
         headers
       });
     }
+
   } catch (error) {
     console.error("Error processing user:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to insert user";

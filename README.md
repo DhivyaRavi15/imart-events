@@ -9,3 +9,7 @@ supabase functions deploy add-user --debug
 
 
  supabase functions serve add-user //to test locally
+
+ 
+brew install postgresql@16
+supabase db reset
