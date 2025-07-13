@@ -7,14 +7,33 @@ import type { Database } from "../_shared/database.types.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const isLocal = Deno.env.get("IS_LOCAL") === "true";
 
 const supabase = createClient<Database>(supabaseUrl, supabaseServiceRoleKey);
 
+// CORS headers to include when running locally
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info",
+};
+
 serve(async (req: Request) => {
+  // Handle OPTIONS request for CORS preflight when running locally
+  if (isLocal && req.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders,
+    });
+  }
+  
   const { event, user } = await req.json();
 
   if (event !== "SIGNED_UP") {
-    return new Response("Not handling this event", { status: 200 });
+    return new Response("Not handling this event", { 
+      status: 200,
+      headers: isLocal ? corsHeaders : { "Content-Type": "application/json" }
+    });
   }
 
   let data;
@@ -54,23 +73,41 @@ serve(async (req: Request) => {
     data = result;
     
     if (result.error) {
+      // Create headers based on environment
+      const headers = {
+        "Content-Type": "application/json",
+        ...(isLocal ? corsHeaders : {})
+      };
 
       return new Response(JSON.stringify({ message: result.error.message, success: false}), { 
         status: 400,
-        headers: { "Content-Type": "application/json" }
+        headers
       });
     }
   } catch (error) {
     console.error("Error processing user:", error);
     const errorMessage = error instanceof Error ? error.message : "Failed to insert user";
+    
+    // Create headers based on environment
+    const headers = {
+      "Content-Type": "application/json",
+      ...(isLocal ? corsHeaders : {})
+    };
+    
     return new Response(JSON.stringify({ message: errorMessage, success: false}), { 
-    status: 400,
-    headers: { "Content-Type": "application/json" }
-  });
+      status: 400,
+      headers
+    });
   }
+
+  // Create headers based on environment
+  const headers = {
+    "Content-Type": "application/json",
+    ...(isLocal ? corsHeaders : {})
+  };
 
   return new Response(JSON.stringify({ message: "User added successfully", success: true }), { 
     status: 200,
-    headers: { "Content-Type": "application/json" }
+    headers
   });
 });
