@@ -54,8 +54,11 @@ serve(async (req: Request) => {
     data = result;
     
     if (result.error) {
-      console.error("Insert error:", result.error.message);
-      return new Response(result.error.message, { status: 500 });
+
+      return new Response(JSON.stringify({ message: result.error.message, success: false}), { 
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
     }
   } catch (error) {
     console.error("Error processing user:", error);
