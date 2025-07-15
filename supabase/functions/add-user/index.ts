@@ -8,7 +8,7 @@ import type { Database } from "../_shared/database.types.ts";
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 // const isLocal = Deno.env.get("IS_LOCAL") === "true";
-const isLocal = false;
+const isLocal = true;
 
 
 const supabase = createClient<Database>(supabaseUrl, supabaseServiceRoleKey);
@@ -99,7 +99,7 @@ serve(async (req: Request) => {
     // Combine country code and phone number
     
     const userInsert: Database['public']['Tables']['users']['Insert'] = {
-      user_auth_id: id,
+      user_id: id,
       email,
       first_name,
       last_name,
