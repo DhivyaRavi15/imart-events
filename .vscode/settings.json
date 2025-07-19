@@ -21,5 +21,16 @@
     "http",
     "net"
   ],
-  "zencoder.enableRepoIndexing": true
+  "zencoder.enableRepoIndexing": true,
+  "zencoder.mcpServers": {
+    "Supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token=sbp_a5eb9855d62f6d60966133c0bb4fe4ae64ce41e1",
+        "--project-ref=uycpfzpkgepvlahagija"
+      ]
+    }
+  }
 }
