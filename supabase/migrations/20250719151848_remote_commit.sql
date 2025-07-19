@@ -860,29 +860,8 @@ alter table "public"."notifications" add constraint "notifications_user_id_fkey"
 
 alter table "public"."notifications" validate constraint "notifications_user_id_fkey";
 
-alter table "public"."organization_apps" add constraint "fk_org_apps_app" FOREIGN KEY (app_id) REFERENCES apps(app_id) not valid;
-
-alter table "public"."organization_apps" validate constraint "fk_org_apps_app";
-
-alter table "public"."organization_apps" add constraint "fk_org_apps_organization" FOREIGN KEY (organization_id) REFERENCES organizations(organization_id) not valid;
-
-alter table "public"."organization_apps" validate constraint "fk_org_apps_organization";
-
-alter table "public"."organization_apps" add constraint "fk_org_apps_plan" FOREIGN KEY (organization_plan_id) REFERENCES organization_plans(organization_plan_id) not valid;
-
-alter table "public"."organization_apps" validate constraint "fk_org_apps_plan";
-
-alter table "public"."organization_apps" add constraint "fk_organization_apps_app" FOREIGN KEY (app_id) REFERENCES apps(app_id) ON DELETE CASCADE not valid;
-
-alter table "public"."organization_apps" validate constraint "fk_organization_apps_app";
-
-alter table "public"."organization_apps" add constraint "fk_organization_apps_organization" FOREIGN KEY (organization_id) REFERENCES organizations(organization_id) ON DELETE CASCADE not valid;
-
-alter table "public"."organization_apps" validate constraint "fk_organization_apps_organization";
-
-alter table "public"."organization_apps" add constraint "fk_organization_apps_plan" FOREIGN KEY (organization_plan_id) REFERENCES organization_plans(organization_plan_id) ON DELETE SET NULL not valid;
-
-alter table "public"."organization_apps" validate constraint "fk_organization_apps_plan";
+-- Duplicate foreign key constraints removed to prevent PGRST201 errors
+-- Standard PostgreSQL-generated constraints (organization_apps_*_fkey) are sufficient
 
 alter table "public"."organization_apps" add constraint "organization_apps_app_id_fkey" FOREIGN KEY (app_id) REFERENCES apps(app_id) not valid;
 

@@ -146,9 +146,9 @@ async function fetchEmployeeWithOrganization(userId: string, supabase: SupabaseC
           
           // Log organization and app details
           console.log("Employee Info:", employeeInfo);
-          console.log("Organization Name:", organizationData.name);
-          organizationData.organization_apps?.forEach((orgApp: { app: { name: any; }; }) => {
-            console.log("App Name:", orgApp.app?.name);
+          console.log("Organization Name:", organizationData.organization_name);
+          organizationData.organization_apps?.forEach((orgApp: { app: { app_name: any; }; }) => {
+            console.log("App Name:", orgApp.app?.app_name);
           });
         }
       } catch (orgFetchError) {
