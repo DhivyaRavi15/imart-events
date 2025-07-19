@@ -30,16 +30,7 @@ interface ServiceResult<T> {
 }
 
 const EMPLOYEE_SELECT_QUERY = `
-  *,
-  organization:organization_id (
-    *,
-    organization_apps (
-      *,
-      app:app_id (
-        *
-      )
-    )
-  )
+  *
 `;
 
 const EMPLOYEE_EMPTY_ERROR: CustomError = {
@@ -128,12 +119,43 @@ async function fetchEmployeeWithOrganization(userId: string, supabase: SupabaseC
       return createErrorResult(EMPLOYEE_EMPTY_ERROR);
     }
 
-    // Log organization and app details
-    console.log("Employee Info:", employeeInfo);
-    console.log("Organization Name:", employeeInfo.organization?.name);
-    employeeInfo.organization?.organization_apps?.forEach((orgApp: { app: { name: any; }; }) => {
-      console.log("App Name:", orgApp.app?.name);
-    });
+    console.log("Fetched employee data:", employeeInfo);
+
+    // If employee has an organization_id, fetch organization data separately
+    if (employeeInfo.organization_id) {
+      try {
+        const { data: organizationData, error: orgError } = await supabase
+          .from("organizations")
+          .select(`
+            *,
+            organization_apps (
+              *,
+              app:app_id (
+                *
+              )
+            )
+          `)
+          .eq("organization_id", employeeInfo.organization_id)
+          .single();
+
+          console.log("Fetched organization data:", organizationData);
+          console.log("Fetched orgError:", orgError);
+
+        if (!orgError && organizationData) {
+          employeeInfo.organization = organizationData;
+          
+          // Log organization and app details
+          console.log("Employee Info:", employeeInfo);
+          console.log("Organization Name:", organizationData.name);
+          organizationData.organization_apps?.forEach((orgApp: { app: { name: any; }; }) => {
+            console.log("App Name:", orgApp.app?.name);
+          });
+        }
+      } catch (orgFetchError) {
+        console.warn("Could not fetch organization data:", orgFetchError);
+        // Continue without organization data
+      }
+    }
 
     return createSuccessResult(employeeInfo);
   } catch (error) {
@@ -169,7 +191,7 @@ async function handleEmployeeNotFound(user: User, supabase: SupabaseClient<Datab
 
 export async function getEmployeeAndRelatedData(user: User, supabase: SupabaseClient<Database>): Promise<ServiceResult<any>> {
   try {
-    console.error("Fetching employee data for user:", user.id);
+    console.log("Fetching employee data for user:", user.id);
     
     // Try to fetch existing employee
     const employeeResult = await fetchEmployeeWithOrganization(user.id, supabase);
